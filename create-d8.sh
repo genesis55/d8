@@ -1,6 +1,7 @@
 #!/bin/bash
 # Creates a docker container for Drupal 8 and MySql
 MYSQL_ROOT_PASSWORD="cleveland"
+MYSQL_DATABASE="d8"
 MYSQL_USER="d8"
 MYSQL_PASSWORD="password"
 MYSQL_VERSION="5.7.10"
@@ -19,11 +20,16 @@ MYSQL_CONTAINER="ms8"
 YELLOW="\e[1;33m"
 END='\e[0m'
 FIREFOX="/Applications/Firefox.app/Contents/MacOS/firefox"
-if [ -f $FIREFOX ];then
-   echo "File $FILE exists."
-else
-	FIREFOX="/Applications/Firefox\ ESR.app/Contents/MacOS/firefox"
-fi
+
+function firefox {
+	if [ -f FIREFOX ];then
+		open -a /Applications/Firefox.app/Contents/MacOS/firefox -g $1
+	else
+		#Open on my box
+		open -a /Applications/Firefox\ ESR.app/Contents/MacOS/firefox -g $1
+	fi
+}
+
 echo ""
 echo "Auto creating docker containers for Drupal 8 and MySQL"
 echo ""
@@ -33,9 +39,9 @@ if which docker >/dev/null; then
 else
     echo "docker does not exist"
     echo "Please install Docker Toolbox"
-    echo "Goto: ${WHITEBOLD} https://www.docker.com/docker-toolbox $WHITE"
+    printf "Goto: ${YELLOW} https://www.docker.com/docker-toolbox ${END}"
     echo ""
-    open -a $FIRFOX -g https://www.docker.com/docker-toolbox
+    firefox https://www.docker.com/docker-toolbox
     exit
 fi
 
@@ -45,9 +51,9 @@ if which docker-machine >/dev/null; then
 else
     echo "docker does not exist"
     echo "Please install Docker Toolbox"
-    echo "Goto: https://www.docker.com/docker-toolbox"
+    printf "Goto: ${YELLOW}https://www.docker.com/docker-toolbox${END}"
     echo ""
-    open -a /Applications/Firefox\ ESR.app/Contents/MacOS/firefox -g https://www.docker.com/docker-toolbox
+    firefox https://www.docker.com/docker-toolbox
     exit
 fi
 
@@ -84,7 +90,7 @@ docker kill $MYSQL_CONTAINER
 docker rm $MYSQL_CONTAINER
 echo ""
 echo "Starting Drupal 8 container on $DOCKER_VM"
-docker run --name d8 -p $HOST_PORT:80 -d drupal:$DRUPAL_VERSION
+docker run --name $DRUPAL_CONTAINER -p $HOST_PORT:80 -d drupal:$DRUPAL_VERSION
 docker run --name $MYSQL_CONTAINER -p $MYSQL_HOST_PORT:3306 -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -e MYSQL_USER=$MYSQL_USER -e MYSQL_PASSWORD=$MYSQL_PASSWORD -e MYSQL_DATABASE=$MYSQL_DATABASE -d mysql:$MYSQL_VERSION
 docker ps
 echo ""
@@ -97,13 +103,16 @@ echo "HOST IP: $HOST_IP"
 echo "DRUPAL 8 URL: http://$HOST_IP:$HOST_PORT"
 echo ""
 echo "MySQL Information:"
-echo "MYSQL User: $MYSQL_USER"
-echo "MYSQL Password: $MYSQL_PASSWORD"
-echo "MYSQL Host Port: $MYSQL_HOST_PORT"
+echo "Database name: $MYSQL_DATABASE"
+echo "Database username: $MYSQL_USER"
+echo "Database password: $MYSQL_PASSWORD"
+echo "MySQL Host: $HOST_IP"
+echo "MySQL Port: $MYSQL_HOST_PORT"
+echo "  Note: If username above fails, use root and password below for Drupal 8 setup."
 echo "Addtional info... root password: $MYSQL_ROOT_PASSWORD"
 echo ""
 echo "Container $DRUPAL_CONTAINER is running Drupal version $DRUPAL_VERSION"
 echo "Container $MYSQL_CONTAINER is running MySQL version $MYSQL_VERSION"
 echo ""
 
-open -a /Applications/Firefox\ ESR.app/Contents/MacOS/firefox -g http://$HOST_IP:$HOST_PORT
+firefox http://$HOST_IP:$HOST_PORT
