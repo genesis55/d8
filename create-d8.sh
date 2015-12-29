@@ -4,8 +4,8 @@ MYSQL_ROOT_PASSWORD="cleveland"
 MYSQL_USER="d8"
 MYSQL_PASSWORD="password"
 MYSQL_VERSION="5.7.10"
-DRUPAL_VERSION="8.0.1"
-DRUPAL_DATABASE="d8"
+DRUPAL_VERSION="latest"
+
 OS=`uname`
 MYSQL_HOST_PORT="3307"
 HOST_IP=""
@@ -18,7 +18,13 @@ MYSQL_CONTAINER="ms8"
 #Color codes
 YELLOW="\e[1;33m"
 END='\e[0m'
-
+FIREFOX="/Applications/Firefox.app/Contents/MacOS/firefox"
+if [ -f $FIREFOX ];then
+   echo "File $FILE exists."
+else
+	FIREFOX="/Applications/Firefox\ ESR.app/Contents/MacOS/firefox"
+fi
+echo ""
 echo "Auto creating docker containers for Drupal 8 and MySQL"
 echo ""
 #Make sure docker is installed
@@ -29,7 +35,7 @@ else
     echo "Please install Docker Toolbox"
     echo "Goto: ${WHITEBOLD} https://www.docker.com/docker-toolbox $WHITE"
     echo ""
-    open -a /Applications/Firefox\ ESR.app/Contents/MacOS/firefox -g https://www.docker.com/docker-toolbox
+    open -a $FIRFOX -g https://www.docker.com/docker-toolbox
     exit
 fi
 
@@ -64,7 +70,7 @@ if [ $VM_RUNNING = 0 ]; then
 fi
 
 DOCKER_VM="$(docker-machine ls |grep Running |awk '{print $1}')"
-HOST_IP="$(docker-machine ip docker-vm)"
+HOST_IP="$(docker-machine ip $DOCKER_VM)"
 echo ""
 echo "Loading ENV for $DOCKER_VM"
 eval "$(docker-machine env $DOCKER_VM)"
