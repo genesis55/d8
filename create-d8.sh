@@ -17,6 +17,7 @@ DRUPAL_CONTAINER="d8"
 MYSQL_CONTAINER="ms8"
 
 #Color codes
+GREEN="\e[1;32m"
 YELLOW="\e[1;33m"
 END='\e[0m'
 FIREFOX="/Applications/Firefox.app/Contents/MacOS/firefox"
@@ -31,16 +32,19 @@ function firefox {
 }
 
 echo ""
-echo "Auto creating docker containers for Drupal 8 and MySQL"
+echo "*"
+echo "* Auto creating docker containers for Drupal 8 and MySQL"
+echo "*"
 echo ""
+#Check REQUIREMENTS
+printf "${GREEN}Checking Requirements${END}\n"
 #Make sure docker is installed
 if which docker >/dev/null; then
     echo "docker is installed"
 else
     echo "docker does not exist"
     echo "Please install Docker Toolbox"
-    printf "Goto: ${YELLOW} https://www.docker.com/docker-toolbox ${END}"
-    echo ""
+    printf "Goto: ${YELLOW} https://www.docker.com/docker-toolbox ${END}\n"
     firefox https://www.docker.com/docker-toolbox
     exit
 fi
@@ -49,10 +53,9 @@ fi
 if which docker-machine >/dev/null; then
     echo "docker-machine is installed"
 else
-    echo "docker does not exist"
+    echo "docker-machine does not exist"
     echo "Please install Docker Toolbox"
-    printf "Goto: ${YELLOW}https://www.docker.com/docker-toolbox${END}"
-    echo ""
+    printf "Goto: ${YELLOW}https://www.docker.com/docker-toolbox${END}\n"
     firefox https://www.docker.com/docker-toolbox
     exit
 fi
@@ -62,9 +65,11 @@ if [[ $OS == 'Darwin' ]]; then
    echo "Mac OS - Darwin detected"
 else
 	echo "Currently this script only supports Mac OS"
-	echo "Run on a Mac or modify to work with Linux"
+	echo "Run on a Mac or modify this script to work with Linux"
 	exit
 fi
+#Check Docker VM
+printf "\n${GREEN}Checking Docker VM status${END}\n"
 #Is a docker vm up and running?
 VM_RUNNING="$(docker-machine ls |grep Running |wc -l)"
 if [ $VM_RUNNING = 0 ]; then
@@ -73,14 +78,22 @@ if [ $VM_RUNNING = 0 ]; then
 	printf "Example: ${YELLOW}docker-machine start docker-vm${END}\n"
 	echo "To view available VM's:"
 	printf "Type: ${YELLOW}docker-machine ls${END}\n"
+	docker-machine ls
+	exit
 fi
 
 DOCKER_VM="$(docker-machine ls |grep Running |awk '{print $1}')"
 HOST_IP="$(docker-machine ip $DOCKER_VM)"
-echo ""
+printf "A Docker VM named ${YELLOW}$DOCKER_VM${END} is running and assigned an IP of ${YELLOW}$HOST_IP${END}\n"
 echo "Loading ENV for $DOCKER_VM"
 eval "$(docker-machine env $DOCKER_VM)"
+echo '# Run this command to configure your shell:' 
+printf '# eval "$(docker-machine env %s)"\n' "$DOCKER_VM"
+echo '# After running the eval command you will be able to execute docker commands from the command prompt.' 
+#Check status of Drupal 8
 echo ""
+printf "Checking status of Drupal 8 container named ${YELLOW}$DRUPAL_CONTAINER${END}\n"
+#exit
 #set
 #docker-machine env $DOCKER_VM
 echo "Kill and Remove existing containters"
