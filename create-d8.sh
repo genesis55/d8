@@ -5,12 +5,14 @@ MYSQL_DATABASE="d8"
 MYSQL_USER="d8"
 MYSQL_PASSWORD="password"
 MYSQL_VERSION="5.7.10"
+#DRUPAL_VERSION="latest"
 DRUPAL_VERSION="latest"
+JENKINS_CONTAINER="j8"
 
 OS=`uname`
 MYSQL_HOST_PORT="3307"
 HOST_IP=""
-HOST_PORT="8080"
+HOST_PORT="8081"
 
 #docker
 DRUPAL_CONTAINER="d8"
@@ -84,6 +86,7 @@ fi
 
 DOCKER_VM="$(docker-machine ls |grep Running |awk '{print $1}')"
 HOST_IP="$(docker-machine ip $DOCKER_VM)"
+
 printf "A Docker VM named ${YELLOW}$DOCKER_VM${END} is running and assigned an IP of ${YELLOW}$HOST_IP${END}\n"
 echo "Loading ENV for $DOCKER_VM"
 eval "$(docker-machine env $DOCKER_VM)"
@@ -101,10 +104,15 @@ docker kill $DRUPAL_CONTAINER
 docker rm $DRUPAL_CONTAINER
 docker kill $MYSQL_CONTAINER
 docker rm $MYSQL_CONTAINER
+docker kill $JENKINS_CONTAINER
+docker rm $JENKINS_CONTAINER
 echo ""
 echo "Starting Drupal 8 container on $DOCKER_VM"
+
 docker run --name $DRUPAL_CONTAINER -p $HOST_PORT:80 -d drupal:$DRUPAL_VERSION
 docker run --name $MYSQL_CONTAINER -p $MYSQL_HOST_PORT:3306 -e MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD -e MYSQL_USER=$MYSQL_USER -e MYSQL_PASSWORD=$MYSQL_PASSWORD -e MYSQL_DATABASE=$MYSQL_DATABASE -d mysql:$MYSQL_VERSION
+docker run --name $JENKINS_CONTAINER -p 8080:8080 -p 50000:50000 -d jenkins:latest
+
 docker ps
 echo ""
 echo "Docker Containers are now up and running."
@@ -129,3 +137,5 @@ echo "Container $MYSQL_CONTAINER is running MySQL version $MYSQL_VERSION"
 echo ""
 
 firefox http://$HOST_IP:$HOST_PORT
+firefox http://$HOST_IP:8080
+
